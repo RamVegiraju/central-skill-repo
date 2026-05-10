@@ -5,6 +5,16 @@ description: "Deploy agent to Databricks Apps using DAB (Databricks Asset Bundle
 
 # Deploy to Databricks Apps
 
+## Profile Configuration
+
+**IMPORTANT:** Before running any `databricks` CLI command, read the `.env` file to get the `DATABRICKS_CONFIG_PROFILE` value. All commands must include the profile:
+
+```bash
+databricks <command> --profile <profile>
+```
+
+For example, if `.env` has `DATABRICKS_CONFIG_PROFILE=dev`, run `databricks bundle deploy --profile dev`. Without this, the CLI may target the wrong workspace.
+
 ## App Naming Convention
 
 Unless the user specifies a different name, apps should use the prefix `agent-*`:
@@ -22,16 +32,19 @@ resources:
 
 ## Deploy Commands
 
-**IMPORTANT:** Always run BOTH commands to deploy and start your app:
+**IMPORTANT:** Run the pre-flight check before deploying to catch errors early, then run commands to deploy and start your app:
 
 ```bash
-# 1. Validate bundle configuration (catches errors before deploy)
+# 1. Pre-flight check (starts server locally, sends test request, verifies response)
+uv run preflight
+
+# 2. Validate bundle configuration (catches config errors before deploy)
 databricks bundle validate
 
-# 2. Deploy the bundle (creates/updates resources, uploads files)
+# 3. Deploy the bundle (creates/updates resources, uploads files)
 databricks bundle deploy
 
-# 3. Run the app (starts/restarts with uploaded source code) - REQUIRED!
+# 4. Run the app (starts/restarts with uploaded source code) - REQUIRED!
 databricks bundle run {{BUNDLE_NAME}}
 ```
 
@@ -178,6 +191,19 @@ databricks apps get <app-name> --output json | jq '{app_status, compute_status}'
 databricks apps get <app-name> --output json | jq -r '.url'
 ```
 
+## Post-Deploy: Autoscaling Lakebase Resources
+
+If the agent uses **autoscaling Lakebase** (user mentions "autoscaling", "project", or "branch" in the context of Lakebase), the postgres resource is declared natively in `databricks.yml` — `databricks bundle deploy` creates the app with it. You only need to grant table permissions to the app's service principal after deploy:
+
+```bash
+# Find the SP client ID
+databricks apps get <name> --output json | jq -r '.service_principal_client_id'
+
+# Grant table permissions (see scripts/grant_lakebase_permissions.py)
+```
+
+**See `.claude/skills/add-tools/examples/lakebase-autoscaling.yaml` for the full resource snippet.** Requires CLI v0.295.0+ for native `postgres` resource support.
+
 ## Important Notes
 
 - **App naming convention**: App names must be prefixed with `agent-` (e.g., `agent-my-assistant`, `agent-data-analyst`)
@@ -219,4 +245,4 @@ uv add <package_name>
 | "Provider produced inconsistent result" | Sync app config to `databricks.yml` |
 | "should set workspace.root_path" | Add `root_path` to production target |
 | App running old code after deploy | Run `databricks bundle run {{BUNDLE_NAME}}` after deploy |
-| Env var is None in deployed app | Check `valueFrom` in app.yaml matches resource `name` in databricks.yml |
+| Env var is None in deployed app | Check `value_from` in databricks.yml `config.env` matches resource `name` |

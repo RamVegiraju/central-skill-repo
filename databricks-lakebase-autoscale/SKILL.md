@@ -1,6 +1,6 @@
 ---
 name: databricks-lakebase-autoscale
-description: "Patterns and best practices for using Lakebase Autoscaling (next-gen managed PostgreSQL) with autoscaling, branching, scale-to-zero, and instant restore."
+description: "Patterns and best practices for Lakebase Autoscaling (next-gen managed PostgreSQL). Use when creating or managing Lakebase Autoscaling projects, configuring autoscaling compute or scale-to-zero, working with database branching for dev/test workflows, implementing reverse ETL via synced tables, or connecting applications to Lakebase with OAuth credentials."
 ---
 
 # Lakebase Autoscaling
@@ -173,26 +173,66 @@ w.postgres.update_endpoint(
 
 The following MCP tools are available for managing Lakebase infrastructure. Use `type="autoscale"` for Lakebase Autoscaling.
 
-### Database (Project) Management
+### manage_lakebase_database - Project Management
 
-| Tool | Description |
-|------|-------------|
-| `create_or_update_lakebase_database` | Create or update a database. Finds by name, creates if new, updates if existing. Use `type="autoscale"`, `display_name`, `pg_version` params. A new project auto-creates a production branch, default compute, and databricks_postgres database. |
-| `get_lakebase_database` | Get database details (including branches and endpoints) or list all. Pass `name` to get one, omit to list all. Use `type="autoscale"` to filter. |
-| `delete_lakebase_database` | Delete a project and all its branches, computes, and data. Use `type="autoscale"`. |
+| Action | Description | Required Params |
+|--------|-------------|-----------------|
+| `create_or_update` | Create or update a project | name |
+| `get` | Get project details (includes branches/endpoints) | name |
+| `list` | List all projects | (none, optional type filter) |
+| `delete` | Delete project and all branches/computes/data | name |
 
-### Branch Management
+**Example usage:**
+```python
+# Create an autoscale project
+manage_lakebase_database(
+    action="create_or_update",
+    name="my-app",
+    type="autoscale",
+    display_name="My Application",
+    pg_version="17"
+)
 
-| Tool | Description |
-|------|-------------|
-| `create_or_update_lakebase_branch` | Create or update a branch with its compute endpoint. Params: `project_name`, `branch_id`, `source_branch`, `ttl_seconds`, `is_protected`, plus compute params (`autoscaling_limit_min_cu`, `autoscaling_limit_max_cu`, `scale_to_zero_seconds`). |
-| `delete_lakebase_branch` | Delete a branch and its compute endpoints. |
+# Get project with branches
+manage_lakebase_database(action="get", name="my-app", type="autoscale")
 
-### Credentials
+# Delete project
+manage_lakebase_database(action="delete", name="my-app", type="autoscale")
+```
 
-| Tool | Description |
-|------|-------------|
-| `generate_lakebase_credential` | Generate OAuth token for PostgreSQL connections (1-hour expiry). Pass `endpoint` resource name for autoscale. |
+### manage_lakebase_branch - Branch Management
+
+| Action | Description | Required Params |
+|--------|-------------|-----------------|
+| `create_or_update` | Create/update branch with compute endpoint | project_name, branch_id |
+| `delete` | Delete branch and endpoints | name (full branch name) |
+
+**Example usage:**
+```python
+# Create a dev branch with 7-day TTL
+manage_lakebase_branch(
+    action="create_or_update",
+    project_name="my-app",
+    branch_id="development",
+    source_branch="production",
+    ttl_seconds=604800,  # 7 days
+    autoscaling_limit_min_cu=0.5,
+    autoscaling_limit_max_cu=4.0,
+    scale_to_zero_seconds=300
+)
+
+# Delete branch
+manage_lakebase_branch(action="delete", name="projects/my-app/branches/development")
+```
+
+### generate_lakebase_credential - OAuth Tokens
+
+Generate OAuth token (~1hr) for PostgreSQL connections. Use as password with `sslmode=require`.
+
+```python
+# For autoscale endpoints
+generate_lakebase_credential(endpoint="projects/my-app/branches/production/endpoints/ep-primary")
+```
 
 ## Reference Files
 
@@ -290,5 +330,5 @@ These features are NOT yet supported in Lakebase Autoscaling:
 - **[databricks-app-apx](../databricks-app-apx/SKILL.md)** - full-stack apps that can use Lakebase for persistence
 - **[databricks-app-python](../databricks-app-python/SKILL.md)** - Python apps with Lakebase backend
 - **[databricks-python-sdk](../databricks-python-sdk/SKILL.md)** - SDK used for project management and token generation
-- **[databricks-asset-bundles](../databricks-asset-bundles/SKILL.md)** - deploying apps with Lakebase resources
+- **[databricks-bundles](../databricks-bundles/SKILL.md)** - deploying apps with Lakebase resources
 - **[databricks-jobs](../databricks-jobs/SKILL.md)** - scheduling reverse ETL sync jobs
