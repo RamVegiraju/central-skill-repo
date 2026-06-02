@@ -97,3 +97,4 @@ When the same skill exists in both sources, the repo version takes priority.
 - [Databricks App Templates](https://github.com/databricks/app-templates/tree/main/.claude/skills)
 - [HuggingFace Skills](https://github.com/huggingface/skills)
 - [LangChain/DeepAgents Skills](https://github.com/langchain-ai/langchain-skills/tree/main/config/skills)
+- [Jeffallan/claude-skills](https://github.com/Jeffallan/claude-skills) — source for the `fine-tuning-expert` skill (LoRA/QLoRA/PEFT)
