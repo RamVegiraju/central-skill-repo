@@ -12,6 +12,23 @@ Claude Code loads skills from multiple locations with a strict priority order:
 
 Skills in this repo live at the top level (e.g., `langgraph-human-in-the-loop/SKILL.md`). They need to be installed to one of the above locations to be picked up by Claude Code, or pushed to Databricks for Genie Code.
 
+## System Design & Engineering skills
+
+Beyond the ML/Data Engineering skills, this repo now includes a curated set of
+general software-engineering skills focused on system design, reliability, and
+performance:
+
+| Skill | Use it for |
+|-------|-----------|
+| [`system-design`](./system-design) | Workflow + reference index for designing large-scale systems; points to the System Design Primer. Start here for architecture work. |
+| [`api-design-reviewer`](./api-design-reviewer) | REST API design review, linting, and breaking-change detection. |
+| [`database-designer`](./database-designer) | Schema design, indexing, SQL-vs-NoSQL choice, data modeling. |
+| [`observability-designer`](./observability-designer) | Metrics/logs/traces strategy, dashboards, alert-noise reduction. |
+| [`slo-architect`](./slo-architect) | SLO/SLI definition, error budgets, burn-rate alerting. |
+| [`performance-profiler`](./performance-profiler) | Profiling CPU/memory/I/O bottlenecks; latency and throughput tuning. |
+| [`chaos-engineering`](./chaos-engineering) | Fault-injection experiment design, blast-radius analysis, gamedays. |
+| [`migration-architect`](./migration-architect) | Zero-downtime migration planning, compatibility checks, rollback strategies. |
+
 ## Install Skills to Claude Code
 
 Copy skills from this repo into `~/.claude/skills/` so they're available across **all** your Claude Code projects.
@@ -98,3 +115,5 @@ When the same skill exists in both sources, the repo version takes priority.
 - [HuggingFace Skills](https://github.com/huggingface/skills)
 - [LangChain/DeepAgents Skills](https://github.com/langchain-ai/langchain-skills/tree/main/config/skills)
 - [Jeffallan/claude-skills](https://github.com/Jeffallan/claude-skills) — source for the `fine-tuning-expert` skill (LoRA/QLoRA/PEFT)
+- [claude-skills by Alireza Rezvani](https://github.com/alirezarezvani/claude-skills) (MIT) — source for the engineering skills (`api-design-reviewer`, `database-designer`, `observability-designer`, `slo-architect`, `performance-profiler`, `chaos-engineering`, `migration-architect`)
+- [System Design Primer](https://github.com/donnemartin/system-design-primer) — the reference behind the `system-design` skill
