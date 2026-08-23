@@ -86,7 +86,7 @@ When the same skill exists in both sources, the repo version takes priority.
 ./push_skills_to_genie.sh --claude-only
 
 # Push specific skills only
-./push_skills_to_genie.sh databricks-bundles agent-evaluation
+./push_skills_to_genie.sh databricks-dabs agent-evaluation
 
 # Use a different Databricks CLI profile
 ./push_skills_to_genie.sh --profile prod
@@ -109,11 +109,61 @@ When the same skill exists in both sources, the repo version takes priority.
 
 ## Resources/Credits
 
-- [Databricks AI Dev Kit](https://github.com/databricks-solutions/ai-dev-kit) — source for Databricks and MLflow skills, including the original `install_skills.sh` installer that the scripts in this repo are adapted from
-- [MLflow Skills](https://github.com/mlflow/skills) — MLflow tracing, evaluation, and onboarding skills
-- [Databricks App Templates](https://github.com/databricks/app-templates/tree/main/.claude/skills)
+Skills in this repo are curated from these upstream sources:
+
+- **[databricks/databricks-agent-skills](https://github.com/databricks/databricks-agent-skills)** — the source for all `databricks-*` skills. Distributed through the `databricks aitools` CLI (see [Syncing from upstream](#syncing-from-upstream) below).
+- [Databricks AI Dev Kit](https://github.com/databricks-solutions/ai-dev-kit) — the installer/bootstrapper (`install.sh`) and the Databricks MCP server. **No longer hosts the Databricks skills themselves** — as of AI Dev Kit v0.2.0 those moved to `databricks-agent-skills` and are delivered by `databricks aitools`, which ships with Databricks CLI v1.0.0+. The `install_skills.sh` in this repo is adapted from the original Dev Kit installer.
+- [MLflow Skills](https://github.com/mlflow/skills) — MLflow tracing, evaluation, scorers, and onboarding skills
+- [Databricks App Templates](https://github.com/databricks/app-templates/tree/main/.claude/skills) — agent/app scaffolding skills (use the repo-root `.claude/skills`; the per-template copies are template-specific variants)
 - [HuggingFace Skills](https://github.com/huggingface/skills)
 - [LangChain/DeepAgents Skills](https://github.com/langchain-ai/langchain-skills/tree/main/config/skills)
 - [Jeffallan/claude-skills](https://github.com/Jeffallan/claude-skills) — source for the `fine-tuning-expert` skill (LoRA/QLoRA/PEFT)
-- [claude-skills by Alireza Rezvani](https://github.com/alirezarezvani/claude-skills) (MIT) — source for the engineering skills (`api-design-reviewer`, `database-designer`, `observability-designer`, `slo-architect`, `performance-profiler`, `chaos-engineering`, `migration-architect`)
+- [claude-skills by Alireza Rezvani](https://github.com/alirezarezvani/claude-skills) (MIT) — source for the engineering skills (`api-design-reviewer`, `database-designer`, `observability-designer`, `slo-architect`, `performance-profiler`, `chaos-engineering`, `migration-architect`); use the `engineering/skills/` copies
 - [System Design Primer](https://github.com/donnemartin/system-design-primer) — the reference behind the `system-design` skill
+
+### Syncing from upstream
+
+Databricks skills are no longer cloned from a repo — pull them with the CLI:
+
+```bash
+# Write the current Databricks skill set to a directory (no agent/state changes)
+databricks aitools install --path ./ --experimental --profile <PROFILE>
+
+# List available skills and versions (includes experimental)
+databricks aitools list -o json --profile <PROFILE>
+
+# Update whatever is already installed
+databricks aitools update --profile <PROFILE>
+```
+
+Note: the `databricks` **plugin** for Claude Code ships only the *stable* skills.
+Experimental ones (`databricks-ai-runtime`, `spark-python-data-source`) must be
+installed as raw skill files:
+
+```bash
+databricks aitools install --skills databricks-ai-runtime \
+  --skills-only --experimental --agents claude-code --scope global --profile <PROFILE>
+```
+
+The other sources are plain git repos — clone and copy the skill directories.
+
+### Upstream renames
+
+When Databricks skill sourcing moved to `databricks-agent-skills`, several skills were
+renamed. This repo now tracks the new names; the old ones have been removed:
+
+| Old name | New name |
+|----------|----------|
+| `databricks-bundles`, `databricks-asset-bundles` | `databricks-dabs` |
+| `databricks-config` | `databricks-core` |
+| `databricks-spark-declarative-pipelines` | `databricks-pipelines` |
+| `databricks-lakebase-autoscale`, `databricks-lakebase-provisioned` | `databricks-lakebase` |
+| `databricks-app-python` | `databricks-apps-python` |
+| `databricks-app-apx` | `databricks-apps` |
+| `databricks-synthetic-data-generation` | `databricks-synthetic-data-gen` |
+
+`databricks-model-serving` was also slimmed to ops-only; its model-development
+content now lives in the new `databricks-ml-training` skill.
+
+Two skills in this repo are no longer published upstream and are kept as local
+copies: `huggingface-jobs` and `framework-selection`.

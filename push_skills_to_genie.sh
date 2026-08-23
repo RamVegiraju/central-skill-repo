@@ -16,7 +16,7 @@
 #   ./push_skills_to_genie.sh --dry-run               # Show what would be uploaded without doing it
 #   ./push_skills_to_genie.sh --repo-only             # Only push skills from this repo
 #   ./push_skills_to_genie.sh --claude-only            # Only push skills from ~/.claude/skills
-#   ./push_skills_to_genie.sh databricks-bundles agent-evaluation  # Push specific skills only
+#   ./push_skills_to_genie.sh databricks-dabs agent-evaluation  # Push specific skills only
 #
 
 set -e
@@ -71,7 +71,7 @@ while [ $# -gt 0 ]; do
             echo "  ./push_skills_to_genie.sh --force                      # Push all, overwrite existing"
             echo "  ./push_skills_to_genie.sh --dry-run                    # Preview what would happen"
             echo "  ./push_skills_to_genie.sh --repo-only                  # Only push repo skills"
-            echo "  ./push_skills_to_genie.sh databricks-bundles           # Push specific skill"
+            echo "  ./push_skills_to_genie.sh databricks-dabs              # Push specific skill"
             echo "  ./push_skills_to_genie.sh --profile prod --force       # Force push with prod profile"
             exit 0
             ;;
